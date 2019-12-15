@@ -4,8 +4,8 @@ from enum import Enum, auto
 from operator import add, mul, lt, eq
 from functools import reduce
 
-def qp(line):
-    m = re.findall(r"([-+\d]+)", line)
+def qp(pl):
+    m = re.findall(r"([-+\d]+)", pl)
     return tuple(int(x) for x in m)
 
 with open("input", "r") as inp:
@@ -28,7 +28,8 @@ class IntCode(object):
     def __init__(self, mem, ip = 0):
         self.__origmem__ = tuple(mem)
         self.mem = list(mem)
-        self.ip = 0
+        self.__origip__ = ip
+        self.ip = ip
         self.state = States.RESET
         self.instrs = {
             1: Instr("add", 1, 2, True, add, 4),
@@ -59,7 +60,7 @@ class IntCode(object):
 
     def reset(self):
         self.mem = list(self.__origmem__)
-        self.ip = 0
+        self.ip = self.__origip__
         self.state = States.RESET
 
     def _get_args(self, modes, n_args, output=True):
