@@ -85,7 +85,7 @@ class IntCode(object):
             elif mode is ArgMode.POS:
                 args.append(self.mem[self.mem[self.ip + arg + 1]])
             else:
-                raise ValueError("not comparing")
+                raise ValueError("Invalid parameter mode")
 
         if output:
             arg += 1
