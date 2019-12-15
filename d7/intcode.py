@@ -123,17 +123,17 @@ with open("input.txt", "r") as inp:
 
 
 async def p1(phase_values):
-    output_buffer = Queue()
-    start_buffer = output_buffer
+    input_buffer = Queue()
+    start_buffer = input_buffer
 
     tasks = []
     for phase in phase_values:
-        new_output_buffer = Queue()
-        output_buffer.put_nowait(phase)
-        amp = IntCode(init, input_buffer=output_buffer,
-                      output_buffer=new_output_buffer)
+        output_buffer = Queue()
+        input_buffer.put_nowait(phase)
+        amp = IntCode(init, input_buffer=input_buffer,
+                      output_buffer=output_buffer)
         tasks.append(create_task(amp.run()))
-        output_buffer = new_output_buffer
+        input_buffer = output_buffer
 
     start_buffer.put_nowait(0)
     for task in tasks:
@@ -142,25 +142,26 @@ async def p1(phase_values):
 
 
 async def p2(phase_values):
-    output_buffer = Queue()
-    start_buffer = output_buffer
+    input_buffer = Queue()
+    start_buffer = input_buffer
 
     amps = []
     tasks = []
     for phase in phase_values:
-        new_output_buffer = Queue()
-        output_buffer.put_nowait(phase)
-        amp = IntCode(init, input_buffer=output_buffer,
-                      output_buffer=new_output_buffer)
+        output_buffer = Queue()
+        input_buffer.put_nowait(phase)
+        amp = IntCode(init, input_buffer=input_buffer,
+                      output_buffer=output_buffer)
         amps.append(amp)
         tasks.append(create_task(amp.run()))
-        output_buffer = new_output_buffer
+        input_buffer = output_buffer
+    # Create loop
     amps[-1].output_buffer = amps[0].input_buffer
     start_buffer.put_nowait(0)
 
     for task in tasks:
         await task
-    return amps[-1].output_buffer.get_nowait()
+    return start_buffer.get_nowait()
 
 
 vals = []
