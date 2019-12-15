@@ -7,8 +7,8 @@ from itertools import permutations
 from asyncio import Queue, create_task, run, iscoroutinefunction
 
 
-def qp(line):
-    m = re.findall(r"([-+\d]+)", line)
+def qp(pl):
+    m = re.findall(r"([-+\d]+)", pl)
     return tuple(int(x) for x in m)
 
 
@@ -35,7 +35,7 @@ class IntCode(object):
     def __init__(self, mem, ip=0, input_buffer=None, output_buffer=None):
         self.__origmem__ = tuple(mem)
         self.mem = list(mem)
-        self.ip = 0
+        self.ip = ip
         self.state = States.RESET
         self.instrs = {
             1: Instr("add", 1, 2, True, add, 4),
