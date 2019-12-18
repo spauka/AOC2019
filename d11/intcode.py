@@ -158,7 +158,7 @@ class Point(tuple):
 
     def __sub__(self, o):
         return Point((x-y) for x, y in zip(self, o))
-    
+
     def __abs__(self):
         return Point(abs(x) for x in self)
 
@@ -181,7 +181,7 @@ class Grid(object):
         self.tiles = {}
         self.tl = Point((0, 0))
         self.br = Point((0, 0))
-    
+
     def __getitem__(self, point):
         if point in self.tiles:
             return self.tiles[point]
@@ -212,7 +212,7 @@ class Robot(object):
 
     def input(self):
         return self.grid[self.pos]
-    
+
     def output(self, val):
         if self.state == RobotState.PAINT:
             self.grid[self.pos] = val
