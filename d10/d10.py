@@ -1,14 +1,8 @@
 from math import atan2, pi
+import sys
+sys.path.append("..")
 
-class Point(tuple):
-    def __add__(self, o):
-        return Point((x+y for x, y in zip(self, o)))
-
-    def __sub__(self, o):
-        return Point((x-y) for x, y in zip(self, o))
-    
-    def __abs__(self):
-        return Point(abs(x) for x in self)
+from common import Point
 
 class Fraction(tuple):
     @staticmethod
