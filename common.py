@@ -45,8 +45,11 @@ class Grid(object):
         self.tl = Point((min(point[0], self.tl[0]), max(point[1], self.tl[1])))
         self.br = Point((max(point[0], self.br[0]), min(point[1], self.br[1])))
 
-    def print_grid(self):
-        for y in range(self.br[1], self.tl[1]+1):
+    def print_grid(self, flip=False):
+        starty, stopy, stepy = self.br[1], self.tl[1]+1, 1
+        if flip:
+            starty, stopy, stepy = self.tl[1], self.br[1]-1, -1
+        for y in range(starty, stopy, stepy):
             for x in range(self.tl[0], self.br[0]+1):
                 if self.tilemap is not None:
                     print(self.tilemap[self[Point((x, y))]], end="")
