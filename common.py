@@ -21,6 +21,15 @@ class Point(tuple):
     def __abs__(self):
         return Point(abs(x) for x in self)
 
+    def __repr__(self):
+        return f"Point{super().__repr__()}"
+
+    def adjacent(self, other):
+        try:
+            return Dir(other - self)
+        except ValueError:
+            return False
+
     @staticmethod
     def cmpi(i, o):
         if i < o: return 1
@@ -49,12 +58,14 @@ class Grid(object):
         self.tl = Point((min(point[0], self.tl[0]), max(point[1], self.tl[1])))
         self.br = Point((max(point[0], self.br[0]), min(point[1], self.br[1])))
 
-    def print_grid(self, flipy=False):
+    def print_grid(self, flipy=False, highlight=None, highlight_val="X"):
         output = []
         for y in range(self.br[1], self.tl[1]+1):
             line = []
             for x in range(self.tl[0], self.br[0]+1):
-                if self.tilemap is not None:
+                if highlight == Point((x, y)):
+                    line.append(highlight_val)
+                elif self.tilemap is not None:
                     line.append(self.tilemap[self[Point((x, y))]])
                 else:
                     line.append("█" if self[Point((x, y))] else " ")
