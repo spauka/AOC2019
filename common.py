@@ -4,6 +4,13 @@ def qp(line):
     m = re.findall(r"([-+\d]+)", line)
     return tuple(int(x) for x in m)
 
+def gcd(x, y):
+    if y == 0:
+        return x
+    return gcd(y, x%y)
+def lcm(x, y):
+    return x*y//gcd(x, y)
+
 class Point(tuple):
     def __add__(self, o):
         return Point((x+y for x, y in zip(self, o)))
