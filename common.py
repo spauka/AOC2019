@@ -1,12 +1,12 @@
 import re
+from enum import Enum
 
 def qp(line):
     m = re.findall(r"([-+\d]+)", line)
     return tuple(int(x) for x in m)
 
 def gcd(x, y):
-    if y == 0:
-        return x
+    if y == 0: return x
     return gcd(y, x%y)
 def lcm(x, y):
     return x*y//gcd(x, y)
@@ -23,12 +23,9 @@ class Point(tuple):
 
     @staticmethod
     def cmpi(i, o):
-        if i < o:
-            return 1
-        elif i == o:
-            return 0
-        else:
-            return -1
+        if i < o: return 1
+        if i == o: return 0
+        return -1
 
     def cmp(self, other):
         return Point(self.cmpi(s, o) for s, o in zip(self, other))
@@ -52,14 +49,34 @@ class Grid(object):
         self.tl = Point((min(point[0], self.tl[0]), max(point[1], self.tl[1])))
         self.br = Point((max(point[0], self.br[0]), min(point[1], self.br[1])))
 
-    def print_grid(self, flip=False):
-        starty, stopy, stepy = self.br[1], self.tl[1]+1, 1
-        if flip:
-            starty, stopy, stepy = self.tl[1], self.br[1]-1, -1
-        for y in range(starty, stopy, stepy):
+    def print_grid(self, flipy=False):
+        output = []
+        for y in range(self.br[1], self.tl[1]+1):
+            line = []
             for x in range(self.tl[0], self.br[0]+1):
                 if self.tilemap is not None:
-                    print(self.tilemap[self[Point((x, y))]], end="")
+                    line.append(self.tilemap[self[Point((x, y))]])
                 else:
-                    print("█" if self[Point((x, y))] else " ", end="")
-            print()
+                    line.append("█" if self[Point((x, y))] else " ")
+            output.append("".join(line))
+        if flipy:
+            output.reverse()
+        print("\n".join(output))
+
+
+class Dir(Enum):
+    UP = Point((0, 1))
+    RIGHT = Point((1, 0))
+    DOWN = Point((0, -1))
+    LEFT = Point((-1, 0))
+
+    @classmethod
+    def dirs(cls):
+        return tuple(cls.__members__.keys())
+
+    @classmethod
+    def turn_left(cls, val):
+        return getattr(cls, cls.dirs()[(cls.dirs().index(val.name)-1)%4])
+    @classmethod
+    def turn_right(cls, val):
+        return getattr(cls, cls.dirs()[(cls.dirs().index(val.name)+1)%4])
