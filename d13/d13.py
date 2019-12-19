@@ -37,7 +37,7 @@ class Game(object):
     def input(self):
         if self.ball[0] < self.paddle[0]:
             return -1
-        elif self.ball[0] > self.paddle[0]:
+        if self.ball[0] > self.paddle[0]:
             return 1
         return 0
     def output(self, val):
@@ -73,5 +73,5 @@ print(len(list(tile for tile in grid.tiles.values() if tile == TileType.BLOCK)))
 p1.reset()
 p1.mem[0] = 2
 p1.run()
-grid.print_grid()
+#grid.print_grid()
 print(game.score)
