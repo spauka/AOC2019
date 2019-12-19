@@ -2,7 +2,7 @@ from collections import namedtuple, defaultdict
 from enum import Enum, auto
 from operator import add, mul, lt, eq
 from functools import reduce
-from asyncio import run, iscoroutinefunction
+import asyncio
 
 def compose(*functions):
     return reduce(lambda f, g: lambda *x: f(g(*x)), functions, lambda x: x)
@@ -60,17 +60,17 @@ class IntCode(object):
         self.output_callback = output_callback
 
     def run(self):
-        return run(self.async_run())
+        return asyncio.run(self.async_run())
 
     async def async_run(self):
         self.state = States.RUNNING
         while self.state is States.RUNNING:
-            opcode = self.mem[self.ip] % 100
-            argmodes = self.mem[self.ip]//100
-            c_instr = self.instrs[opcode]
+            opcode = self.mem[self.ip]
+            argmodes = opcode//100
+            c_instr = self.instrs[opcode%100]
             args, output = self._get_args(
                 argmodes, c_instr.args, c_instr.output)
-            if iscoroutinefunction(c_instr.action):
+            if asyncio.iscoroutinefunction(c_instr.action):
                 res = await c_instr.action(*args)
             else:
                 res = c_instr.action(*args)
@@ -86,45 +86,39 @@ class IntCode(object):
         self.ip = 0
         self.state = States.RESET
 
+    def _get_arg_addr(self, p_addr, mode):
+        if mode is ArgMode.IMM:
+            return p_addr
+        elif mode is ArgMode.POS:
+            return self.mem[p_addr]
+        elif mode is ArgMode.REL:
+            return self.mem[p_addr] + self.rb
+        else:
+            raise ValueError("Invalid Parameter Mode")
+
     def _get_args(self, modes, n_args, output=True):
         args = []
         arg = -1
-        for arg in range(n_args):
+        for arg, addr in enumerate(range(self.ip+1, self.ip+n_args+1)):
             mode = ArgMode((modes//(10**arg)) % 10)
-            if mode is ArgMode.IMM:
-                args.append(self.mem[self.ip + arg + 1])
-            elif mode is ArgMode.POS:
-                args.append(self.mem[self.mem[self.ip + arg + 1]])
-            elif mode is ArgMode.REL:
-                args.append(self.mem[self.mem[self.ip + arg + 1] + self.rb])
-            else:
-                raise ValueError("Invalid parameter mode")
+            args.append(self.mem[self._get_arg_addr(addr, mode)])
 
         if output:
-            arg += 1
-            output_mode = ArgMode((modes//(10**arg)) % 10)
-            if output_mode is ArgMode.POS:
-                output = self.mem[self.ip + arg + 1]
-            elif output_mode is ArgMode.REL:
-                output = self.mem[self.ip + arg + 1] + self.rb
-            else:
-                raise ValueError(
-                    "Parameter shouldn't be able to write in IMM or REL mode")
+            output_mode = ArgMode((modes//(10**(arg+1))) % 10)
+            output = self._get_arg_addr(self.ip + arg + 2, output_mode)
 
         return args, output
 
     # Instrs
     async def input(self):
-        if iscoroutinefunction(self.input_callback):
+        if asyncio.iscoroutinefunction(self.input_callback):
             return await self.input_callback()
-        else:
-            return self.input_callback()
+        return self.input_callback()
 
     async def output(self, arg):
-        if iscoroutinefunction(self.output_callback):
-            await self.output_callback(arg)
-        else:
-            self.output_callback(arg)
+        if asyncio.iscoroutinefunction(self.output_callback):
+            return await self.output_callback(arg)
+        return self.output_callback(arg)
 
     def rbs(self, offs):
         self.rb += offs
