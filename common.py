@@ -18,6 +18,12 @@ class Point(tuple):
     def __sub__(self, o):
         return Point((x-y) for x, y in zip(self, o))
 
+    def __matmul__(self, o):
+        new_point = []
+        for i in range(len(self)):
+            new_point.append(sum(p*o[i][j] for j, p in enumerate(self)))
+        return Point(new_point)
+
     def __abs__(self):
         return Point(abs(x) for x in self)
 
@@ -58,6 +64,12 @@ class Grid(object):
         self.tl = Point((min(point[0], self.tl[0]), max(point[1], self.tl[1])))
         self.br = Point((max(point[0], self.br[0]), min(point[1], self.br[1])))
 
+    def __contains__(self, key):
+        return key in self.tiles
+
+    def points(self):
+        return self.tiles.keys()
+
     def print_grid(self, flipy=False, highlight=None, highlight_val="X"):
         output = []
         for y in range(self.br[1], self.tl[1]+1):
@@ -81,13 +93,28 @@ class Dir(Enum):
     DOWN = Point((0, -1))
     LEFT = Point((-1, 0))
 
+    TURN_LEFT = ((0, -1),(1, 0))
+    TURN_RIGHT = ((0, 1), (-1, 0))
+
+    @classmethod
+    def _missing_(cls, val):
+        try:
+            return cls.MAP_LETTER[val]
+        except IndexError:
+            super()._missing_(val)
+
     @classmethod
     def dirs(cls):
         return tuple(cls.__members__.keys())
 
-    @classmethod
-    def turn_left(cls, val):
-        return getattr(cls, cls.dirs()[(cls.dirs().index(val.name)-1)%4])
-    @classmethod
-    def turn_right(cls, val):
-        return getattr(cls, cls.dirs()[(cls.dirs().index(val.name)+1)%4])
+    def turn_left(self):
+        return Dir(self.value@self.TURN_LEFT.value)
+    def turn_right(self):
+        return Dir(self.value@self.TURN_RIGHT.value)
+
+Dir.MAP_LETTER = {
+    'U': Dir.UP,
+    'R': Dir.RIGHT,
+    'D': Dir.DOWN,
+    'L': Dir.LEFT
+}
