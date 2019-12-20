@@ -57,7 +57,7 @@ class Robot(object):
     def set_ip(self, ip):
         self.ip = ip
 
-    def bfs(self, target, pos=None):
+    def dfs(self, target, pos=None):
         next_nodes = deque()
         visited = set()
 
@@ -97,7 +97,7 @@ class Robot(object):
             # Get the next boundary value to explore
             try:
                 self.target = self.boundary.pop()
-                self.target_path = self.bfs(self.target)
+                self.target_path = self.dfs(self.target)
             except IndexError:
                 self.state = State.EXPLORED
                 self.ip.term()
@@ -137,7 +137,7 @@ robot.set_ip(ip)
 ip.run()
 
 grid.print_grid(flipy=True)
-print(f"Path to oxy: {len(robot.bfs(robot.oxy, Point((0, 0))))}")
+print(f"Path to oxy: {len(robot.dfs(robot.oxy, Point((0, 0))))}")
 
 # Then, figure out how long oxygen takes to fill
 iters = 0
