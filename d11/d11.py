@@ -29,9 +29,9 @@ class Robot(object):
             self.state = RobotState.TURN
         else:
             if val:
-                self.dir = Dir.turn_right(self.dir)
+                self.dir = self.dir.turn_right()
             else:
-                self.dir = Dir.turn_left(self.dir)
+                self.dir = self.dir.turn_left()
             self.pos = self.pos + self.dir.value
             self.state = RobotState.PAINT
 
