@@ -13,9 +13,13 @@ def lcm(x, y):
 
 class Point(tuple):
     def __add__(self, o):
+        if isinstance(o, Dir):
+            o = o.value
         return Point((x+y for x, y in zip(self, o)))
 
     def __sub__(self, o):
+        if isinstance(o, Dir):
+            o = o.value
         return Point((x-y) for x, y in zip(self, o))
 
     def __matmul__(self, o):
@@ -108,6 +112,17 @@ class Dir(Enum):
     @classmethod
     def dirs(cls):
         return tuple(cls.__members__.keys())
+
+    def __add__(self, o):
+        if isinstance(o, Dir):
+            return self.value - o.value
+        return self.value + o
+    def __sub__(self, o):
+        if isinstance(o, Dir):
+            return self.value - o.value
+        return self.value - o
+    def __matmul__(self, o):
+        return self.value@o
 
     def turn_left(self):
         return Dir(self.value@((0, -1),(1, 0)))
