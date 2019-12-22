@@ -75,8 +75,13 @@ class Grid(object):
         for y in range(self.br[1], self.tl[1]+1):
             line = []
             for x in range(self.tl[0], self.br[0]+1):
-                if highlight == Point((x, y)):
-                    line.append(highlight_val)
+                if isinstance(highlight, Point):
+                    highlight = tuple(highlight)
+                if Point((x, y)) in highlight:
+                    if highlight_val in self.tilemap:
+                        line.append(self.tilemap[highlight_val])
+                    else:
+                        line.append(highlight_val)
                 elif self.tilemap is not None:
                     line.append(self.tilemap[self[Point((x, y))]])
                 else:
@@ -93,9 +98,6 @@ class Dir(Enum):
     DOWN = Point((0, -1))
     LEFT = Point((-1, 0))
 
-    TURN_LEFT = ((0, -1),(1, 0))
-    TURN_RIGHT = ((0, 1), (-1, 0))
-
     @classmethod
     def _missing_(cls, val):
         try:
@@ -108,9 +110,9 @@ class Dir(Enum):
         return tuple(cls.__members__.keys())
 
     def turn_left(self):
-        return Dir(self.value@self.TURN_LEFT.value)
+        return Dir(self.value@((0, -1),(1, 0)))
     def turn_right(self):
-        return Dir(self.value@self.TURN_RIGHT.value)
+        return Dir(self.value@((0, 1), (-1, 0)))
 
 Dir.MAP_LETTER = {
     'U': Dir.UP,
@@ -118,3 +120,4 @@ Dir.MAP_LETTER = {
     'D': Dir.DOWN,
     'L': Dir.LEFT
 }
+Dir.LETTER_MAP = {v: k for k, v in Dir.MAP_LETTER.items()}
