@@ -81,7 +81,7 @@ class Grid(object):
             for x in range(self.tl[0], self.br[0]+1):
                 if isinstance(highlight, Point):
                     highlight = tuple(highlight)
-                if Point((x, y)) in highlight:
+                if highlight is not None and Point((x, y)) in highlight:
                     if highlight_val in self.tilemap:
                         line.append(self.tilemap[highlight_val])
                     else:
