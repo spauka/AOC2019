@@ -1,6 +1,7 @@
 import sys
 from enum import Enum
-from collections import namedtuple, deque, OrderedDict
+from itertools import product
+from collections import namedtuple, deque, OrderedDict, defaultdict
 import heapq
 from functools import lru_cache
 sys.path.append("..")
@@ -23,24 +24,6 @@ TileMap = {
 SearchNode = namedtuple("SearchNode", ("pos", "prev", "dist", "doors"))
 DFSSearchNode = namedtuple("DFSSearchNode", ("dist", "pos", "unlocked"))
 FoundKey = namedtuple("FoundKey", ("key", "pos", "dist", "doors"))
-
-class LRU(OrderedDict):
-    def __init__(self, capacity=2**14):
-        self.capacity = capacity
-        super().__init__()
-
-    def __getitem__(self, key):
-        val = self.pop(key)
-        self[key] = val
-        return val
-
-    def __setitem__(self, key, val):
-        try:
-            self.pop(key)
-        except KeyError:
-            if len(self) >= self.capacity:
-                self.popitem(last=False)
-        super().__setitem__(key, val)
 
 class Dykstra:
     def __init__(self, grid, all_keys, all_doors):
@@ -79,7 +62,7 @@ class Dykstra:
 
         return keys
 
-def dfs(grid, start, all_keys, all_doors):
+def dfs(grid, start, all_keys, all_doors, ignore_doors=False):
     next_nodes = []
     total = set(all_keys.values())
     visited = set()
@@ -100,7 +83,7 @@ def dfs(grid, start, all_keys, all_doors):
         # Check if this is the final node
         if cstep.unlocked == total:
             print(f"Done in {abs(cstep.dist)} steps")
-            return
+            return cstep.dist
 
         # Get list of accessible keys
         keys = dk.dykstra(cstep.pos)
@@ -108,7 +91,7 @@ def dfs(grid, start, all_keys, all_doors):
         # Then, make a node after visiting each key
         for key in keys:
             # Check that it's accessible
-            if len(key.doors.difference(cstep.unlocked)) != 0:
+            if not ignore_doors and len(key.doors.difference(cstep.unlocked)) != 0:
                 continue
             # And that we haven't already collected it
             if key.key in cstep.unlocked:
@@ -140,4 +123,26 @@ with open("input", "r") as f:
             cpoint = cpoint + Dir.RIGHT
         cpoint = Point((0, cpoint[1]+1))
 
+# Part 1
 dfs(grid, start, keys, doors)
+
+# Part 2
+# Fix grid
+grid[start] = TileType.WALL
+for d in Dir:
+    grid[start+d] = TileType.WALL
+
+# Figure out new starts, and locations of keys
+starts = {}
+gkeys = defaultdict(dict)
+for d1, d2 in product((Dir.UP, Dir.DOWN), (Dir.LEFT, Dir.RIGHT)):
+    starts[start.cmp(start+d1+d2)] = start+d1+d2
+for pos, key in keys.items():
+    gkeys[start.cmp(pos)][pos] = key
+
+# Then run the search for each robot
+dists = []
+for k in gkeys.keys():
+    dists.append(dfs(grid, starts[k], gkeys[k], doors, ignore_doors=True))
+print(f"Total sum: {sum(dists)}")
+#grid.print_grid(highlight=starts)
