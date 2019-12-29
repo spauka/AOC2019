@@ -115,7 +115,7 @@ class Dir(Enum):
 
     def __add__(self, o):
         if isinstance(o, Dir):
-            return self.value - o.value
+            return self.value + o.value
         return self.value + o
     def __sub__(self, o):
         if isinstance(o, Dir):
