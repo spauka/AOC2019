@@ -14,9 +14,9 @@ class TileType(IntEnum):
     SCAFFOLD = ord('#')
     SPACE    = ord('.')
     ROBOT_L  = ord('<')
-    ROBOT_D  = ord('v') # FLipped due to coordinate choice
+    ROBOT_D  = ord('v')
     ROBOT_R  = ord('>')
-    ROBOT_U  = ord('^') # Flipped due to coordinate choice
+    ROBOT_U  = ord('^')
 
 TileMap = {
     TileType.UNKNOWN:  " ",
@@ -64,9 +64,9 @@ def rle_path(path):
     for nstep in path[1:]:
         if nstep != cstep:
             if Dir(nstep) == Dir(cstep).turn_left():
-                enc_path.append("R")
+                enc_path.append("R") # Flipped due to coordinate choice
             elif Dir(nstep) == Dir(cstep).turn_right():
-                enc_path.append("L")
+                enc_path.append("L") # Flipped due to coordinate choice
             else:
                 RuntimeError(f"How to turn from {cstep} to {nstep}")
             enc_path.append(-1)
@@ -228,7 +228,7 @@ print(f"Alignment Param: {sum(x[0]*x[1] for x in robot.intersections)}")
 path = robot.visit_all()
 path = rle_path(path)
 path = tuple(f"{x},{y}" for x, y in zip(islice(path, 0, None, 2), islice(path, 1, None, 2)))
-print(len(path), path)
+print(len(path), ", ".join(path))
 
 repeats = defaultdict(int)
 for start in range(len(path)):
@@ -237,6 +237,9 @@ for start in range(len(path)):
         if len(prog) > 20:
             continue
         repeats[prog] += 1
+
+for val, reps in sorted(repeats.items(), key=lambda x: (x[1], len(x[0]))):
+    print(f"{reps}: {val}")
 
 # TODO: Figure out how to do this step automatically
 robot.A = 'L,10,L,6,R,10'
