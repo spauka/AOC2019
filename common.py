@@ -87,7 +87,7 @@ class Grid(object):
                     else:
                         line.append(highlight_val)
                 elif self.tilemap is not None:
-                    line.append(self.tilemap[self[Point((x, y))]])
+                    line.append(self.tilemap.get(self[Point((x, y))], self[Point((x, y))]))
                 else:
                     line.append("█" if self[Point((x, y))] else " ")
             output.append("".join(line))
