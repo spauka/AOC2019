@@ -27,8 +27,7 @@ class Robot(object):
         self.state = State.PASS_X
         self.grid = grid
         self.ip = None
-        self.x_pos = None
-        self.y_pos = None
+        self.pos = None
 
     def set_ip(self, ip):
         self.ip = ip
@@ -36,19 +35,24 @@ class Robot(object):
     def input(self):
         if self.state is State.PASS_X:
             self.state = State.PASS_Y
-            return int(self.x_pos)
+            return int(self.pos[0])
         if self.state is State.PASS_Y:
             self.state = State.READ
-            return int(self.y_pos)
+            return int(self.pos[1])
         raise RuntimeError(f"Invalid input instr in state {self.state}")
 
     def output(self, val):
         if self.state is State.READ:
-            tt = TileType(val)
-            self.grid[Point((self.x_pos, self.y_pos))] = tt
+            self.grid[self.pos] = TileType(val)
             self.state = State.PASS_X
         else:
             raise RuntimeError(f"Invalid output instr in state {self.state}")
+
+    def query_point(self, p):
+        self.ip.reset()
+        self.pos = p
+        self.ip.run()
+        return robot.grid[p]
 
 with open("input", "r") as inp:
     init = tuple(qp(inp.read()))
@@ -59,18 +63,12 @@ robot = Robot(grid)
 ip = IntCode(init, input_callback=robot.input, output_callback=robot.output)
 robot.set_ip(ip)
 
-def query_point(robot, p):
-    robot.ip.reset()
-    robot.x_pos, robot.y_pos = p
-    robot.ip.run()
-    return robot.grid[p]
-
 def find_tl(robot):
     sq = 1
     while True:
         for p in range(sq):
-            xp = query_point(robot, Point((p, sq)))
-            yp = query_point(robot, Point((sq, p)))
+            xp = robot.query_point(Point((p, sq)))
+            yp = robot.query_point(Point((sq, p)))
             if xp is TileType.BEAM:
                 return Point((p, sq))
             if yp is TileType.BEAM:
@@ -102,7 +100,7 @@ def follow_line(robot, start, max_p, dirs):
     pos = start
     while all(p == 1 for p in npos.cmp(max_p)):
         pos = npos
-        if query_point(robot, pos) is TileType.BEAM:
+        if robot.query_point(pos) is TileType.BEAM:
             npos = pos + dirs[0]
         else:
             npos = pos + dirs[1]
